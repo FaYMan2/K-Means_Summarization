@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+streamlit
+google-generativeai
+python-dotenv
+langchain
+PyPDF2
+faiss-cpu
+langchain_google_genai
+pinecone-client
+upstash_redis
+pdfminer.six
+numpy
+scikit-learn
+langchain
+together
+langchain_together
