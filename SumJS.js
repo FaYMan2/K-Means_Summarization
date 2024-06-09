@@ -44,7 +44,10 @@ for(const doc of docs){
     index += 1
 }
 
-console.log(vectors.length,vectors[0].length)
+const num_clusters = 15
+
+const km = skmeans(vectors,num_clusters)
+console.log(km)
 
 
 
