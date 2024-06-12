@@ -83,11 +83,14 @@ const map_chain = loadSummarizationChain(model,{
 
 
 const selected_docs = selected_indices.map((value) =>{
-    const doc = [docs[value]]
+    const doc = docs[value]
     return doc
 })
 
-console.log(selected_docs)
+
+const summaries = await map_chain.invoke({input_documents : selected_docs})
+
+console.log(summaries)
 
 
 
