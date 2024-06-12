@@ -3,10 +3,11 @@ import { Document } from "langchain/document";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { loadSummarizationChain } from "langchain/chains";
-import { norm } from "mathjs"
+import { distance, min, norm, sum, sumTransformDependencies} from "mathjs"
 import skmeans from "skmeans";
 import { ChatTogetherAI } from '@langchain/community/chat_models/togetherai';
 import { TogetherAIEmbeddings } from "@langchain/community/embeddings/togetherai";
+import { setEngine } from "crypto";
 
 const model = new ChatTogetherAI({
     modelName: 'mistralai/Mistral-7B-Instruct-v0.3',
@@ -46,8 +47,54 @@ for(const doc of docs){
 
 const num_clusters = 15
 
-const km = skmeans(vectors,num_clusters)
-console.log(km)
+const kmeans = skmeans(vectors,num_clusters)
+const centroids = kmeans.centroids
+
+const argFact = (compareFn) => (array) => array.map((el, idx) => [el, idx]).reduce(compareFn)[1]
+const argMin = argFact((max, el) => (el[0] < max[0] ? el : max))
+
+const selected_indices = []
+for(let i =  0;i<num_clusters;i++){
+    const distances =  vectors.map((value) => {
+                return norm(distance(value, centroids[i])) 
+            })
+    selected_indices.push(argMin(distances))
+}
+
+console.log(selected_indices)
+const map_prompt = 
+`You will be given a single passage of a judgement. This section will be enclosed in triple hashtags (###)
+Your goal is to give a summary of this section so that a reader will have a full understanding of the premise
+details.Your response should be at least three paragraphs and fully encompass what was said in the passage.
+
+###${text}###
+FULL SUMMARY:
+`
+const map_prompt_template = new PromptTemplate({
+    inputVariables : ['text'],
+    template : map_prompt
+})
+
+const map_chain = loadSummarizationChain(model,{
+    type : 'stuff',
+    prompt : map_prompt_template,
+})
+
+
+
+const selected_docs = selected_indices.map((value) =>{
+    const doc = [docs[value]]
+    return doc
+})
+
+console.log(selected_docs)
+
+
+
+
+
+
+
 
 
 
